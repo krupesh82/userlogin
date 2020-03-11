@@ -1,0 +1,7 @@
+
+MobileApp/userlogin/.*
+MobileApp/userlogin/android/app/src/debug/
+REST-API/userlogin/userlogin/__pycache__/
+REST-API/userlogin/users/__pycache__/
+REST-API/userlogin/users/migrations/
+REST-API/venv/
