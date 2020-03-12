@@ -68,10 +68,33 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'userlogin.urls'
 
-AUTHENTICATION_BACKENDS = (
-    "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
+# AUTHENTICATION_BACKENDS = (
+#     "django.contrib.auth.backends.ModelBackend",
+#     "allauth.account.auth_backends.AuthenticationBackend",
+# )
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ORIGIN_WHITELIST = (
+    'http://localhost:3000',
 )
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+        # 'rest_framework_datatables.renderers.DatatablesRenderer',
+    ),
+    # 'DEFAULT_FILTER_BACKENDS': (
+    #     'rest_framework_datatables.filters.DatatablesFilterBackend',
+    #     'django_filters.rest_framework.DjangoFilterBackend',
+    # ),
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework_datatables.pagination.DatatablesPageNumberPagination',
+    # 'PAGE_SIZE': 10,
+}
 
 SITE_ID = 1
 
