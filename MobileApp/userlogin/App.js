@@ -5,6 +5,7 @@ import { NavigationContainer } from "@react-navigation/native";
 
 import SplashScreen from './components/screens/splashscreen';
 import SignIn from "./components/screens/auth/signin";
+import PasswordReset from "./components/screens/auth/passwordreset";
 import Home from "./components/screens/home";
 
 const AuthContext = React.createContext();
@@ -14,31 +15,43 @@ export default function App({ navigation }) {
 
   const [state, dispatch] = React.useReducer(
     (prevState, action) => {
+      console.log(action);
       switch (action.type) {
         case 'RESTORE_TOKEN':
           return {
             ...prevState,
             userToken: action.token,
             isLoading: false,
+            signInMessage: null,
           };
         case 'SIGN_IN':
           return {
             ...prevState,
             isSignout: false,
             userToken: action.token,
+            signInMessage: null,
           };
         case 'SIGN_OUT':
           return {
             ...prevState,
             isSignout: true,
             userToken: null,
+            signInMessage: null,
           };
+        // case 'SIGN_IN_MESSAGE':
+        //   return {
+        //     ...prevState,
+        //     isSignout: true,
+        //     userToken: null,
+        //     signInMessage: action.message,
+        //   };
       }
     },
     {
       isLoading: true,
       isSignout: false,
       userToken: null,
+      signInMessage: null,
     }
   );
 
@@ -46,10 +59,12 @@ export default function App({ navigation }) {
     // Fetch the token from storage then navigate to our appropriate place
     const bootstrapAsync = async () => {
       let userToken;
-
+      console.log('boorstrapAsync');
       try {
         userToken = await AsyncStorage.getItem('userToken');
+        console.log('Token: ' + userToken);
       } catch (e) {
+        console.log('error restoring token: ' + e);
         // Restoring token failed
       }
 
@@ -71,22 +86,27 @@ export default function App({ navigation }) {
         // After getting token, we need to persist the token using `AsyncStorage`
         // In the example, we'll use a dummy token
 
-        // fetch('http://localhost:8000/accounts/login', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify({ username: username, password: password}),
-        // })
-        // .then( res => res.json() )
-        // .then( res => {
-        //     console.log(res.token);
-        //     saveToken(res.token);
-        //     props.navigation.navigate('Home');
-        // })
-        // .catch( error => console.log(error) );
-
-        dispatch({ type: 'SIGN_IN', token: 'dummy-auth-token' });
+        fetch('http://192.168.0.107:8000/rest-auth/login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: data.username, password: data.password }),
+        })
+        .then( res => res.json() )
+        .then( res => {
+            console.log('received login response');
+            console.log(res);
+            if(res.key)
+              dispatch({ type: 'SIGN_IN', token: res.key });
+            else {
+              console.log('Invalid username and/or password.');
+              data.setSignInMessage('Invalid username and/or password.');
+              // dispatch({ type: 'SIGN_IN_MESSAGE', message: 'Invalid username and/or password.' });
+              // navigation('SignIn');
+            }
+        })
+        .catch( error => console.log('signin error ' + error) );
       },
       signOut: () => dispatch({ type: 'SIGN_OUT' }),
       signUp: async data => {
@@ -97,6 +117,36 @@ export default function App({ navigation }) {
 
         dispatch({ type: 'SIGN_IN', token: 'dummy-auth-token' });
       },
+      signInError: () => {
+        return state.signInError;
+      },
+      resetPassword: async data => {
+        fetch('http://192.168.0.107:8000/rest-auth/password/reset/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: data.username }),
+        })
+        .then( res => res.json() )
+        .then( res => {
+            console.log(res);
+            if (res.email) {
+              console.log('email: ' + res.email[0]);
+              data.setResetMessage(res.email[0]);
+              // dispatch({ type: 'SIGN_IN_MESSAGE', message: res.email });
+            }
+            else {
+              console.log('detail: ' + res.detail);
+              data.onNavigationBack(res.detail);
+              data.goBack();
+              // dispatch({ type: 'SIGN_IN_MESSAGE', message: res.detail });
+            }
+            
+            // this.refresh();
+        })
+        .catch( error => console.log('signin error ' + error) );
+      },
     }),
     []
   );
@@ -105,7 +155,7 @@ export default function App({ navigation }) {
     // We haven't finished checking for the token yet
     return <SplashScreen />;
   }
-
+  
   return (
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>
@@ -113,83 +163,35 @@ export default function App({ navigation }) {
           {state.isLoading ? (
             // We haven't finished checking for the token yet
             <Stack.Screen name="Splash" component={SplashScreen} />
-            ) : state.userToken == null ? (
-            // No token found, user isn't signed in
-            <Stack.Screen
-              name="SignIn"
-              component={SignIn}
-              initialParams={{ authContext: AuthContext }}
-              options={{
-                title: 'Sign in',
-                // When logging out, a pop animation feels intuitive
-                animationTypeForReplace: state.isSignout ? 'pop' : 'push',
-              }}
-            />
-          ) : (
-            // User is signed in
-            <Stack.Screen name="Home" component={Home} />
+            ) : 
+            (state.userToken == null ? (
+              // No token found, user isn't signed in
+              <>
+                <Stack.Screen
+                  name="SignIn"
+                  component={SignIn}
+                  initialParams={{ authContext: AuthContext, message: state.signInMessage }}
+                  options={{
+                    title: 'Sign in',
+                  }}
+                />
+                <Stack.Screen
+                  name="PasswordReset"
+                  component={PasswordReset}
+                  initialParams={{ authContext: AuthContext }}
+                  options={{
+                    title: 'Reset Password',
+                  }}
+                />
+              </>
+              )
+             : (
+              // User is signed in
+              <Stack.Screen name="Home" component={Home} />
+              )
           )}
         </Stack.Navigator>
       </NavigationContainer>
     </AuthContext.Provider>
   );
 }
-
-
-
-
-
-// import React from "react";
-// import { NavigationContainer } from "@react-navigation/native";
-// import { createStackNavigator } from "@react-navigation/stack";
-
-
-// import { isSignedIn } from "./components/auth";
-// // import { DrawerNav, BottomNav } from "./components/router";
-// import LogIn from "./components/screens/auth/login";
-// import Register from "./components/screens/auth/register";
-// import Home from "./components/screens/home";
-
-// export default class App extends React.Component {
-//   constructor(props) {
-//     super(props);
-
-//     this.state = {
-//       token: '',
-//       checkedSignIn: false
-//     };
-//   }
-
-//   componentDidMount() { 
-//     isSignedIn()
-//       .then(res => this.setState({ token: res, checkedSignIn: true }))
-//       .catch(err => alert("An error occurred"));
-//   }
-
-//   render() {
-//     const { checkedSignIn, token } = this.state;
-
-//     // If we haven't checked AsyncStorage yet, don't render anything (better ways to do this)
-//     if (!checkedSignIn) {
-//       return null;
-//     }
-//     const Stack = createStackNavigator();
-
-//     return (
-//       <NavigationContainer>
-//         <Stack.Navigator>
-//           {( token === '' || token === null ) ? (
-//             <>
-//               <Stack.Screen name="LogIn" component={LogIn} />
-//               <Stack.Screen name="Register" component={Register} />
-//             </>
-//           ) : (
-//             <>
-//               <Stack.Screen name="Home" component={Home} />
-//             </>
-//           )}
-//         </Stack.Navigator>
-//       </NavigationContainer>
-//     );
-//   }
-// }
