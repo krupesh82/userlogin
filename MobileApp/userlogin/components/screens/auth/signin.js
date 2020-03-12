@@ -1,14 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, Text, View, Button } from 'react-native';
+// import { CheckBox } from 'react-native-elements';
 
 export default function SignIn({ navigation, route }) {
     const [ username, setUsername ] = useState('');
     const [ password, setPassword ] = useState('');
+    const [ message, setMessage ] = useState(route.params?.message);
 
     const { signIn } = React.useContext(route.params?.authContext);
 
+    React.useEffect(() => {
+        console.log('signin useEffect');
+        setMessage(route.params?.message);
+    }, []);
+    const setSignInMessage = (message) => {
+        setMessage(message);
+    }
     return (
         <View>
+            <Text>{ message } </Text>
             <Text>Username</Text>
             <TextInput
                 placeholder="Enter your username"
@@ -27,7 +37,13 @@ export default function SignIn({ navigation, route }) {
                 autoCapitalize = {"none"}
                 autoCompleteType = {"password"}
             />
-            <Button onPress={() => signIn({ username, password })} title="Login" />
+            <Button onPress={() => signIn({ username, password, setSignInMessage })} title="Login" />
+            {/* <CheckBox
+                title='Remember Me'
+                checked={true}
+            /> */}
+            <Text onPress={() => navigation.navigate('PasswordReset', { onNavigateBack: setSignInMessage })} >Forgot your password?</Text>
+
         </View>
     );
 
