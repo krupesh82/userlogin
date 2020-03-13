@@ -42,13 +42,14 @@ export default function SignIn({ navigation, route }) {
                 title='Remember Me'
                 checked={true}
             /> */}
-            <Text onPress={() => navigation.navigate('PasswordReset', { onNavigateBack: setSignInMessage })} >Forgot your password?</Text>
+            <Text onPress={() => navigation.navigate('PasswordReset', { setSignInMessage: setSignInMessage })} >Forgot your password?</Text>
+            <Text onPress={() => navigation.navigate('SignUp', { setSignInMessage: setSignInMessage })} >New User?</Text>
 
         </View>
     );
 
     SignIn.navigationOptions = screenProps => ({
-        title: "Login",
+        title: "Sign In",
         headerStyle: {
             backgroundColor : "blue"
         },
