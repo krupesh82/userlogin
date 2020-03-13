@@ -1,39 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, Text, View, Button, AsyncStorage } from 'react-native';
+import { StyleSheet, TextInput, Text, View, Button } from 'react-native';
+import { CommonActions } from '@react-navigation/native';
 
-export default function SignUp(props) {
-    const [ username, setUsername ] = useState("");
-    const [ password, setPassword ] = useState("");
 
-    useEffect( () => {
-        getToken();
-    }, []);
+export default function SignUp({ navigation, route }) {
+    const [ username, setUsername ] = useState('');
+    const [ password, setPassword ] = useState('');
+    const [ cPassword, setCPassword ] = useState('');
+    const [ usernameMessage, setUsernameMessage ] = useState('');
+    const [ passwordMessage, setPasswordMessage ] = useState('');
 
-    const auth = () => {
-        props.navigation.navigate('Home');
-        // fetch('http://localhost:8000/accounts/login', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify({ username: username, password: password}),
-        // })
-        // .then( res => res.json() )
-        // .then( res => {
-        //     console.log(res.token);
-        //     saveToken(res.token);
-        //     props.navigation.navigate('Dashboard');
-        // })
-        // .catch( error => console.log(error) );
-    };
+    const { signUp } = React.useContext(route.params?.authContext);
 
-    const saveToken = async (token) => {
-        await AsyncStorage.setItem('Auth_Token', token);
+    const navigateBack = (signInMessage) => {
+        route.params?.setSignInMessage(signInMessage);
+        navigation.dispatch(CommonActions.goBack());
     }
 
-    const getToken = async () => {
-        const token = await AsyncStorage.getItem('Auth_Token');
-        if (token) props.navigation.navigate('Dashboard');
+    const setSignUpMessage = (usernameMessage, passwordMessage) => {
+        setUsernameMessage(usernameMessage);
+        setPasswordMessage(passwordMessage);
     }
 
     return (
@@ -44,7 +30,13 @@ export default function SignUp(props) {
                 value={username}
                 onChangeText={text => setUsername(text)}
                 autoCapitalize = {"none"}
+                autoCompleteType = {"email"}
+                keyboardType = {"email-address"}
             />
+            {   
+                usernameMessage !== '' &&
+                <Text>{ usernameMessage }</Text>
+            }
             <Text>Password</Text>
             <TextInput
                 placeholder="Enter your password"
@@ -53,12 +45,37 @@ export default function SignUp(props) {
                 secureTextEntry={true}
                 autoCapitalize = {"none"}
             />
-            <Button onPress={() => auth()} title="Login" />
+            {   
+                passwordMessage !== '' &&
+                <Text>{ passwordMessage }</Text>
+            }
+            <Text>Confirm Password</Text>
+            <TextInput
+                placeholder="Enter your password again"
+                value={cPassword}
+                onChangeText={text => setCPassword(text)}
+                secureTextEntry={true}
+                autoCapitalize = {"none"}
+            />
+            {
+                password !== cPassword &&
+                <Text>Passwords do not match</Text>
+            }
+            <Button 
+                disabled= { username === '' || password === '' || password !== cPassword }
+                onPress={() => { 
+                    setUsernameMessage(''); 
+                    setPasswordMessage(''); 
+                    signUp({ username, password, navigateBack, setSignUpMessage }); 
+                }} 
+                title="Reset" 
+            />
+
         </View>
     );
 
     SignUp.navigationOptions = screenProps => ({
-        title: "Register",
+        title: "Sign Up",
         headerStyle: {
             backgroundColor : "blue"
         },
