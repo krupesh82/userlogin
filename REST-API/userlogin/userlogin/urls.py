@@ -14,17 +14,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf.urls import url
-from .views import FacebookLogin, GoogleLogin, LinkedInLogin
+from .views import FacebookLogin, GoogleLogin, LinkedInLogin, AccountConfirmed
+from allauth.account.views import ConfirmEmailView,PasswordResetView
+from rest_auth.registration.views import VerifyEmailView
 
 urlpatterns = [
     path('users/', include('users.urls')),
     path('accounts/', include('allauth.urls')),
     url(r'^rest-auth/', include('rest_auth.urls')),
-    url(r'^rest-auth/registration/', include('rest_auth.registration.urls')),
     url(r'^rest-auth/facebook/$', FacebookLogin.as_view(), name='facebook_login'),
     url(r'^rest-auth/google/$', GoogleLogin.as_view(), name='google_login'),
     url(r'^rest-auth/linkedin/$', LinkedInLogin.as_view(), name='linkedin_login'),
+    url(r'^rest-auth/registration/account-confirm-email/(?P<key>[-_:\w]+)/$', ConfirmEmailView.as_view(), name='account_confirm_email'),
+    url(r'^rest-auth/registration/account-confirmed/', AccountConfirmed, name='account_confirmed'),
+    url(r'^rest-auth/registration/', include('rest_auth.registration.urls')),
+    url(r'^rest-auth/password-reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', PasswordResetView.as_view(), name='password_reset_confirm'),
+    re_path(r'^account-confirm-email/(?P<key>[-:\w]+)/$', VerifyEmailView.as_view(), name='account_confirm_email'),
     path('admin/', admin.site.urls),
 ]
