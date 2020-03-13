@@ -1,0 +1,9 @@
+{% if status == 'activated' %}
+Your email is confirmed and account is activated.
+{% elif status == 'already_activated' %}
+Your account is already activated.
+{% elif status == 'link_expired' %}
+You activation link is expired.
+{% elif status == 'error' %}
+Oops! There is some problem. Please try again later. If this problem persists, kindly contact the administrator.
+{% endif %}
