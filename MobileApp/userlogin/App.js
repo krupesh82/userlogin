@@ -5,6 +5,7 @@ import { NavigationContainer } from "@react-navigation/native";
 
 import SplashScreen from './components/screens/splashscreen';
 import SignIn from "./components/screens/auth/signin";
+import SignUp from "./components/screens/auth/signup";
 import PasswordReset from "./components/screens/auth/passwordreset";
 import Home from "./components/screens/home";
 
@@ -91,7 +92,7 @@ export default function App({ navigation }) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username: data.username, password: data.password }),
+            body: JSON.stringify({ username: data.username, email: data.username, password: data.password }),
         })
         .then( res => res.json() )
         .then( res => {
@@ -110,15 +111,31 @@ export default function App({ navigation }) {
       },
       signOut: () => dispatch({ type: 'SIGN_OUT' }),
       signUp: async data => {
-        // In a production app, we need to send user data to server and get a token
-        // We will also need to handle errors if sign up failed
-        // After getting token, we need to persist the token using `AsyncStorage`
-        // In the example, we'll use a dummy token
-
+        fetch('http://192.168.0.107:8000/rest-auth/registration/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: data.username, 
+                                    email: data.username, 
+                                    password1: data.password,
+                                    password2: data.password,  
+                                }),
+        })
+        .then( res => res.json() )
+        .then( res => {
+            console.log(res);
+            if(res.detail) {
+              data.navigateBack(res.detail);
+            }
+            else {
+              var email='', password='';
+              if(res.email) { email = res.email; }
+              if(res.password1) { password = res.password1; }
+              data.setSignUpMessage(email, password);
+            }
+        });
         dispatch({ type: 'SIGN_IN', token: 'dummy-auth-token' });
-      },
-      signInError: () => {
-        return state.signInError;
       },
       resetPassword: async data => {
         fetch('http://192.168.0.107:8000/rest-auth/password/reset/', {
@@ -138,12 +155,9 @@ export default function App({ navigation }) {
             }
             else {
               console.log('detail: ' + res.detail);
-              data.onNavigationBack(res.detail);
-              data.goBack();
+              data.navigateBack(res.detail);
               // dispatch({ type: 'SIGN_IN_MESSAGE', message: res.detail });
             }
-            
-            // this.refresh();
         })
         .catch( error => console.log('signin error ' + error) );
       },
@@ -181,6 +195,14 @@ export default function App({ navigation }) {
                   initialParams={{ authContext: AuthContext }}
                   options={{
                     title: 'Reset Password',
+                  }}
+                />
+                <Stack.Screen
+                  name="SignUp"
+                  component={SignUp}
+                  initialParams={{ authContext: AuthContext }}
+                  options={{
+                    title: 'Sign Up',
                   }}
                 />
               </>
