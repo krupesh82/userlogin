@@ -135,7 +135,7 @@ export default function App({ navigation }) {
               data.setSignUpMessage(email, password);
             }
         });
-        dispatch({ type: 'SIGN_IN', token: 'dummy-auth-token' });
+        // dispatch({ type: 'SIGN_IN', token: 'dummy-auth-token' });
       },
       resetPassword: async data => {
         fetch('http://192.168.0.107:8000/rest-auth/password/reset/', {
