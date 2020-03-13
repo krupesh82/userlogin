@@ -9,9 +9,10 @@ export default function PasswordReset({ navigation, route }) {
 
     const { resetPassword } = React.useContext(route.params?.authContext);
 
-    const onNavigationBack = route.params?.onNavigateBack;
-
-    const goBack = () => navigation.dispatch(CommonActions.goBack());
+    const navigateBack = (signInMessage) => {
+        route.params?.setSignInMessage(signInMessage);
+        navigation.dispatch(CommonActions.goBack());
+    }
 
     const setResetMessage = (message) => setMessage(message);
 
@@ -27,7 +28,7 @@ export default function PasswordReset({ navigation, route }) {
                 autoCompleteType = {"email"}
                 keyboardType = {"email-address"}
             />
-            <Button onPress={() => {resetPassword({ username, onNavigationBack, goBack, setResetMessage }); }} title="Reset" />
+            <Button onPress={() => {resetPassword({ username, navigateBack, setResetMessage }); }} title="Reset" />
 
         </View>
     );
