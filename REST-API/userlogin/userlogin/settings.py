@@ -159,10 +159,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Email backend settings for Django
 EMAIL_BACKEND = 'post_office.EmailBackend'
-EMAIL_HOST='smtp.sendgrid.net'
+EMAIL_HOST='xxxxxx'
 EMAIL_PORT=587
 EMAIL_HOST_USER='apikey'
-EMAIL_HOST_PASSWORD='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'
+EMAIL_HOST_PASSWORD='xxxxxx'
 EMAIL_USE_TLS='True'
 
 # Internationalization
