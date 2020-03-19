@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, Text, View, Button } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
-
+import { AuthContext } from "../../context";
 
 export default function PasswordReset({ navigation, route }) {
     const [ username, setUsername ] = useState('');
     const [ message, setMessage ] = useState('');
 
-    const { resetPassword } = React.useContext(route.params?.authContext);
+    const { resetPassword } = React.useContext(AuthContext);
 
     const navigateBack = (signInMessage) => {
         route.params?.setSignInMessage(signInMessage);
