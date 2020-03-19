@@ -2,58 +2,44 @@ import * as React from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
+import { createDrawerNavigator } from "@react-navigation/drawer";
+import { View, Text } from 'react-native';
+
+import {AuthContext} from './components/context';
 
 import SplashScreen from './components/screens/splashscreen';
-import SignIn from "./components/screens/auth/signin";
-import SignUp from "./components/screens/auth/signup";
-import PasswordReset from "./components/screens/auth/passwordreset";
-import Home from "./components/screens/home";
-
-const AuthContext = React.createContext();
-const Stack = createStackNavigator();
+import {AuthStackScreen} from "./components/navigators/authstack";
+import {TabsScreen} from './components/navigators/bottomtabs';
 
 export default function App({ navigation }) {
-
-  const [state, dispatch] = React.useReducer(
-    (prevState, action) => {
-      console.log(action);
-      switch (action.type) {
-        case 'RESTORE_TOKEN':
-          return {
-            ...prevState,
-            userToken: action.token,
-            isLoading: false,
-            signInMessage: null,
-          };
-        case 'SIGN_IN':
-          return {
-            ...prevState,
-            isSignout: false,
-            userToken: action.token,
-            signInMessage: null,
-          };
-        case 'SIGN_OUT':
-          return {
-            ...prevState,
-            isSignout: true,
-            userToken: null,
-            signInMessage: null,
-          };
-        // case 'SIGN_IN_MESSAGE':
-        //   return {
-        //     ...prevState,
-        //     isSignout: true,
-        //     userToken: null,
-        //     signInMessage: action.message,
-        //   };
-      }
-    },
-    {
-      isLoading: true,
-      isSignout: false,
-      userToken: null,
-      signInMessage: null,
-    }
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [isSignout, setIsSignout] = React.useState(false);
+  const [userToken, setUserToken] = React.useState(null);
+  const [signInMessage, setSignInMessage] = React.useState(null);
+    
+  const RootStack = createStackNavigator();
+  const RootStackScreen = () => (
+    <RootStack.Navigator headerMode="none">
+      {userToken ? (
+        <RootStack.Screen
+          name="App"
+          component={TabsScreen}
+          initialParams={{userToken: userToken}}
+          options={{
+            animationEnabled: false,
+          }}
+        />
+      ) : (
+        <RootStack.Screen
+          name="Auth"
+          component={AuthStackScreen}
+          initialParams={{message: signInMessage}}
+          options={{
+            animationEnabled: false,
+          }}
+        />
+      )}
+    </RootStack.Navigator>
   );
 
   React.useEffect(() => {
@@ -73,7 +59,9 @@ export default function App({ navigation }) {
 
       // This will switch to the App screen or Auth screen and this loading
       // screen will be unmounted and thrown away.
-      dispatch({ type: 'RESTORE_TOKEN', token: userToken });
+      setUserToken(userToken);
+      setIsLoading(false);
+      setSignInMessage(null);
     };
 
     bootstrapAsync();
@@ -98,18 +86,28 @@ export default function App({ navigation }) {
         .then( res => {
             console.log('received login response');
             console.log(res);
-            if(res.key)
-              dispatch({ type: 'SIGN_IN', token: res.key });
+            if(res.key) {
+              AsyncStorage.setItem('userToken', res.key)
+              .then(() => {
+                setIsSignout(false);
+                setSignInMessage(null);
+                setUserToken(res.key);
+              });
+            }
             else {
               console.log('Invalid username and/or password.');
               data.setSignInMessage('Invalid username and/or password.');
-              // dispatch({ type: 'SIGN_IN_MESSAGE', message: 'Invalid username and/or password.' });
-              // navigation('SignIn');
             }
         })
         .catch( error => console.log('signin error ' + error) );
       },
-      signOut: () => dispatch({ type: 'SIGN_OUT' }),
+      signOut: async () => {
+        await AsyncStorage.removeItem('userToken').then(res => {
+        setIsSignout(true);
+        setUserToken(null);
+        signInMessage(null);
+        });
+      },
       signUp: async data => {
         fetch('http://192.168.0.107:8000/rest-auth/registration/', {
             method: 'POST',
@@ -135,7 +133,6 @@ export default function App({ navigation }) {
               data.setSignUpMessage(email, password);
             }
         });
-        // dispatch({ type: 'SIGN_IN', token: 'dummy-auth-token' });
       },
       resetPassword: async data => {
         fetch('http://192.168.0.107:8000/rest-auth/password/reset/', {
@@ -151,12 +148,10 @@ export default function App({ navigation }) {
             if (res.email) {
               console.log('email: ' + res.email[0]);
               data.setResetMessage(res.email[0]);
-              // dispatch({ type: 'SIGN_IN_MESSAGE', message: res.email });
             }
             else {
               console.log('detail: ' + res.detail);
               data.navigateBack(res.detail);
-              // dispatch({ type: 'SIGN_IN_MESSAGE', message: res.detail });
             }
         })
         .catch( error => console.log('signin error ' + error) );
@@ -165,7 +160,7 @@ export default function App({ navigation }) {
     []
   );
 
-  if (state.isLoading) {
+  if (isLoading) {
     // We haven't finished checking for the token yet
     return <SplashScreen />;
   }
@@ -173,46 +168,7 @@ export default function App({ navigation }) {
   return (
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>
-        <Stack.Navigator>
-          {state.isLoading ? (
-            // We haven't finished checking for the token yet
-            <Stack.Screen name="Splash" component={SplashScreen} />
-            ) : 
-            (state.userToken == null ? (
-              // No token found, user isn't signed in
-              <>
-                <Stack.Screen
-                  name="SignIn"
-                  component={SignIn}
-                  initialParams={{ authContext: AuthContext, message: state.signInMessage }}
-                  options={{
-                    title: 'Sign in',
-                  }}
-                />
-                <Stack.Screen
-                  name="PasswordReset"
-                  component={PasswordReset}
-                  initialParams={{ authContext: AuthContext }}
-                  options={{
-                    title: 'Reset Password',
-                  }}
-                />
-                <Stack.Screen
-                  name="SignUp"
-                  component={SignUp}
-                  initialParams={{ authContext: AuthContext }}
-                  options={{
-                    title: 'Sign Up',
-                  }}
-                />
-              </>
-              )
-             : (
-              // User is signed in
-              <Stack.Screen name="Home" component={Home} />
-              )
-          )}
-        </Stack.Navigator>
+        <RootStackScreen />
       </NavigationContainer>
     </AuthContext.Provider>
   );
