@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, Text, View, Button } from 'react-native';
-// import { CheckBox } from 'react-native-elements';
+import { AuthContext } from "../../context";
 
 export default function SignIn({ navigation, route }) {
     const [ username, setUsername ] = useState('');
     const [ password, setPassword ] = useState('');
     const [ message, setMessage ] = useState(route.params?.message);
 
-    const { signIn } = React.useContext(route.params?.authContext);
+    const { signIn } = React.useContext(AuthContext);
 
     React.useEffect(() => {
         console.log('signin useEffect');

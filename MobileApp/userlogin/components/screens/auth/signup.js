@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, Text, View, Button } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
-
+import { AuthContext } from "../../context";
 
 export default function SignUp({ navigation, route }) {
     const [ username, setUsername ] = useState('');
@@ -10,7 +10,7 @@ export default function SignUp({ navigation, route }) {
     const [ usernameMessage, setUsernameMessage ] = useState('');
     const [ passwordMessage, setPasswordMessage ] = useState('');
 
-    const { signUp } = React.useContext(route.params?.authContext);
+    const { signUp } = React.useContext(AuthContext);
 
     const navigateBack = (signInMessage) => {
         route.params?.setSignInMessage(signInMessage);
