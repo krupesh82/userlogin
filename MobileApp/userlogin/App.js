@@ -51,6 +51,7 @@ export default function App({ navigation }) {
         userToken = await AsyncStorage.getItem('userToken');
         console.log('Token: ' + userToken);
       } catch (e) {
+        userToken = null;
         console.log('error restoring token: ' + e);
         // Restoring token failed
       }
@@ -105,7 +106,7 @@ export default function App({ navigation }) {
         await AsyncStorage.removeItem('userToken').then(res => {
         setIsSignout(true);
         setUserToken(null);
-        signInMessage(null);
+        setSignInMessage(null);
         });
       },
       signUp: async data => {
@@ -159,8 +160,9 @@ export default function App({ navigation }) {
     }),
     []
   );
-
+  console.log('app js rendering');
   if (isLoading) {
+    console.log('isLoading');
     // We haven't finished checking for the token yet
     return <SplashScreen />;
   }
