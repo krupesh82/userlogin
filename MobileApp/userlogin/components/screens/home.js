@@ -1,43 +1,8 @@
 import React, { userState, userEffect } from 'react';
-import { StyleSheet, TextInput, Text, View, Button } from 'react-native';
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
-
-const MyBottomNav = createBottomTabNavigator();
-
-function BottomNav() {
-  return (
-    <MyBottomNav.Navigator
-      tabBarOptions= {{
-        style: {
-          paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0
-        }
-      }}
-    >
-      <MyBottomNav.Screen 
-        name="Home" 
-        component= {Home} 
-        options= {{
-            tabBarLabel: "Dashboard",
-            tabBarIcon: ({ tintColor }) => (
-                <MaterialCommunityIcons name="home" size={30} color={tintColor} />
-            )
-        }}
-      />
-      <MyBottomNav.Screen 
-        name="Profile" 
-        component={Home} 
-        options= {{
-            tabBarLabel: "Profile",
-            tabBarIcon: ({ tintColor }) => (
-                <MaterialCommunityIcons name="account" size={30} color={tintColor} />
-            )
-        }}
-      />
-    </MyBottomNav.Navigator>
-  );
-}
+import Temp2 from "./temp2";
+import SignOut from "../screens/auth/signout";
 
 const MyDrawerNav = createDrawerNavigator();
 
@@ -46,21 +11,21 @@ function DrawerNav() {
     <MyDrawerNav.Navigator>
       <MyDrawerNav.Screen
         name="Home"
-        component={Home}
+        component={Temp2}
         options={{
           drawerLabel: "Dashboard"
         }}
       />
       <MyDrawerNav.Screen
         name="Profile"
-        component={Home}
+        component={Temp2}
         options={{
           drawerLabel: "Profile"
         }}
       />
       <MyDrawerNav.Screen
         name="Signout"
-        component={Home}
+        component={SignOut}
         options={{
           drawerLabel: "Signout"
         }}
@@ -72,16 +37,50 @@ function DrawerNav() {
 const Stack = createStackNavigator();
 
 function Home(props) {
-
-    return (
-        <View>
-            {/* <Stack.Navigator>
-                <Stack.Screen name="DrawerNav" component={DrawerNav} />
-                <Stack.Screen name="BottomNav" component={BottomNav} />
-            </Stack.Navigator> */}
-            <Text>This is a dashboard.</Text>
-        </View>
-    );
+  return DrawerNav();
+  // return BottomNav();
+  // return (
+  //     // <View>
+  //           {/* <Text>This is a dashboard.</Text> */}
+  //           // <BottomNav />
+  //           {/* <Stack.Navigator>
+  //                <Stack.Screen name="Temp1" component={Temp} />
+  //                <Stack.Screen name="Temp2" component={Temp} />
+  //            </Stack.Navigator> */}
+  //           //  </View>
+  //   // <MyDrawerNav.Navigator>
+  //   //   <MyDrawerNav.Screen
+  //   //     name="Home"
+  //   //     component={Home}
+  //   //     options={{
+  //   //       drawerLabel: "Dashboard"
+  //   //     }}
+  //   //   />
+  //   //   <MyDrawerNav.Screen
+  //   //     name="Profile"
+  //   //     component={Home}
+  //   //     options={{
+  //   //       drawerLabel: "Profile"
+  //   //     }}
+  //   //   />
+  //   //   <MyDrawerNav.Screen
+  //   //     name="Signout"
+  //   //     component={Home}
+  //   //     options={{
+  //   //       drawerLabel: "Signout"
+  //   //     }}
+  //   //   />
+  //   // </MyDrawerNav.Navigator>
+  // );
+    // return (
+    //     <View>
+    //         {/* <Stack.Navigator>
+    //             <Stack.Screen name="DrawerNav" component={DrawerNav} />
+    //             <Stack.Screen name="BottomNav" component={BottomNav} />
+    //         </Stack.Navigator> */}
+    //         <Text>This is a dashboard.</Text>
+    //     </View>
+    // );
 
     Home.navigationOptions = screenProps => ({
         title: "Dashboard",
